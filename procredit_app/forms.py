@@ -4,22 +4,34 @@ from django.contrib.auth.forms import UserCreationForm
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import date
 from .models import Income, Outcome, OutcomeCategory
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Field
 
+class SignUpForm(forms.Form):
+    name = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Name'}), label="")
+    surname = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Surname'}), label="")
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'placeholder': 'Email'}), label="")
+    phone_number = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Phone Number'}), label="")
+    address = forms.CharField(widget=forms.TextInput(attrs={'placeholder': 'Address'}), label="")
+    date_of_birth = forms.DateField(widget=forms.DateInput(attrs={'placeholder': 'Date of Birth'}), label="")
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Password'}), label="")
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}), label="")
 
-class SignUpForm(UserCreationForm):
-    name = forms.CharField(required = True, max_length = 128)
-    surname = forms.CharField(required = True, max_length = 128)
-    email = forms.EmailField(required = True, max_length = 128)
-    password1 = forms.CharField()
-    password2 = forms.CharField()
-    phone_number = forms.IntegerField()
-    date_of_birth = forms.DateField(required = True, widget = forms.DateInput(attrs = {
-                                        'type': 'date',
-                                        'min': '01-01-2008',
-                                        'max': date.today().isoformat()
-                                    }))
-    is_client = forms.BooleanField(required = True, label = 'Are you already a client?')
-    address = forms.CharField(max_length = 128)
+    def __init__(self, *args, **kwargs):
+        super(SignUpForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'POST'
+        self.helper.layout = Layout(
+            Field('name'),
+            Field('surname'),
+            Field('email'),
+            Field('phone_number'),
+            Field('address'),
+            Field('date_of_birth'),
+            Field('password1'),
+            Field('password2'),
+        )
+
 
 
 class SpendingAreasForm(forms.Form):
