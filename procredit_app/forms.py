@@ -7,22 +7,19 @@ from .models import Income, Outcome, OutcomeCategory
 
 
 class SignUpForm(UserCreationForm):
-    name = forms.CharField(required = True, max_length = 128, widget=forms.TextInput(attrs={'placeholder': 'Name'}))
-    surname = forms.CharField(required = True, max_length = 128, widget=forms.TextInput(attrs={'placeholder': 'Surname'}))
-    email = forms.EmailField(required = True, max_length = 128, widget=forms.TextInput(attrs={'placeholder': 'Email'}))
-    phone_number = forms.IntegerField(widget=forms.TextInput(attrs={'placeholder': 'Phone Number'}))
+    name = forms.CharField(required = True, max_length = 128)
+    surname = forms.CharField(required = True, max_length = 128)
+    email = forms.EmailField(required = True, max_length = 128)
+    password1 = forms.CharField()
+    password2 = forms.CharField()
+    phone_number = forms.IntegerField()
     date_of_birth = forms.DateField(required = True, widget = forms.DateInput(attrs = {
                                         'type': 'date',
                                         'min': '01-01-2008',
                                         'max': date.today().isoformat()
                                     }))
     is_client = forms.BooleanField(required = True, label = 'Are you already a client?')
-    address = forms.CharField(max_length = 128, widget=forms.TextInput(attrs={'placeholder': 'Address'}))
-
-
-    class Meta:
-        model = User
-        fields = ('username', 'password1', 'password2')
+    address = forms.CharField(max_length = 128)
 
 
 class SpendingAreasForm(forms.Form):
