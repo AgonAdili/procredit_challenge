@@ -23,3 +23,14 @@ class Outcome(models.Model):
     category = models.CharField(max_length = 50, choices = CATEGORY_CHOICES)
     amount = models.DecimalField(max_digits = 10, decimal_places = 2)
     date = models.DateField()
+
+
+
+class Survey(models.Model):
+    spending_areas = models.TextField()
+    housing_status = models.CharField(max_length=255)
+    debts = models.TextField()
+    usual_spending = models.TextField()
+    subscriptions = models.TextField()
+    wants = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
