@@ -1,1 +1,50 @@
-<h1>Welcome to your dashboard, {{ user.username }}</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to your dashboard, {{ user.username }}</h1>
+
+    <h2>Financial Summary</h2>
+    <p>Total Income: ${{ total_income }}</p>
+    <p>Total Outcome: ${{ total_outcome }}</p>
+    <p>Savings: ${{ savings }}</p>
+    <p>Debts: ${{ debts }}</p>
+
+    <h2>Add Income</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ income_form.as_p }}
+        <button type="submit" name="income_submit">Add Income</button>
+    </form>
+
+    <h2>Add Outcome</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ outcome_form.as_p }}
+        <button type="submit" name="outcome_submit">Add Outcome</button>
+    </form>
+
+    <h2>Add Outcome Category</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ category_form.as_p }}
+        <button type="submit" name="category_submit">Add Category</button>
+    </form>
+
+    <h2>Income Details</h2>
+    <ul>
+        {% for income in incomes %}
+            <li>{{ income.job_title }}: ${{ income.amount }} on {{ income.date }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Outcome Details</h2>
+    <ul>
+        {% for outcome in outcomes %}
+            <li>{{ outcome.category.name }}: ${{ outcome.amount }} on {{ outcome.date }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

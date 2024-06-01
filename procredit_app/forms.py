@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import date
-from .models import Income, Outcome
+from .models import Income, Outcome, OutcomeCategory
 
 
 class SignUpForm(UserCreationForm):
@@ -25,13 +25,28 @@ class SignUpForm(UserCreationForm):
         fields = ('username', 'password1', 'password2')
 
 
+class LoginForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget = forms.PasswordInput)
+
 class IncomeForm(forms.ModelForm):
     class Meta:
         model = Income
         fields = ['job_title', 'amount', 'date']
 
-
 class OutcomeForm(forms.ModelForm):
+    category = forms.ModelChoiceField(queryset=OutcomeCategory.objects.none(), empty_label="Select Category")
+
     class Meta:
         model = Outcome
         fields = ['category', 'amount', 'date']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super(OutcomeForm, self).__init__(*args, **kwargs)
+        self.fields['category'].queryset = OutcomeCategory.objects.filter(user=user)
+
+class OutcomeCategoryForm(forms.ModelForm):
+    class Meta:
+        model = OutcomeCategory
+        fields = ['name']
