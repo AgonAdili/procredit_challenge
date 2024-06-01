@@ -22,7 +22,7 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('password1', 'password2')
+        fields = ('username', 'password1', 'password2')
 
 
 class IncomeForm(forms.ModelForm):

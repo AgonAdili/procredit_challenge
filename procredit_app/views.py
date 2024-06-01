@@ -28,7 +28,7 @@ def dashboard(request):
     
     context = {
         'incomes': incomes,
-        'outcomes': outcomes
+        'outcomes': outcomes,
     }
 
     return render(request, 'dashboard.html', context)
