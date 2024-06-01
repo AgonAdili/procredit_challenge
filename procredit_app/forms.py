@@ -25,6 +25,10 @@ class SignUpForm(UserCreationForm):
         fields = ('password1', 'password2')
 
 
+class LoginForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget = forms.PasswordInput)
+
 class IncomeForm(forms.ModelForm):
     class Meta:
         model = Income
