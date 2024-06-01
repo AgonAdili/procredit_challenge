@@ -1,10 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from datetime import date
 
 class Client(models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
-
 
 class NonClient(models.Model):
     user = models.OneToOneField(User, on_delete = models.CASCADE)
@@ -18,9 +17,9 @@ class OutcomeCategory(models.Model):
 
 class Income(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    job_title = models.CharField(max_length=255)
+    job_title = models.CharField(null = True, blank = False, max_length=255)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField()
+    date = models.DateField(default = date.today())
 
 class Outcome(models.Model):
     CATEGORY_CHOICES = [
