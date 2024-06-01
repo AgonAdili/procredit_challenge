@@ -89,6 +89,7 @@ def dashboard(request):
         'outcome_form': outcome_form,
         'category_form': category_form,
         'categories': categories,
+
     }
     return render(request, 'dashboard.html', context)
 
