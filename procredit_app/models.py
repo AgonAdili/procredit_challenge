@@ -36,7 +36,6 @@ class Outcome(models.Model):
     amount = models.DecimalField(max_digits = 10, decimal_places = 2)
     date = models.DateField()
 
-
 class Survey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     spending_areas = models.TextField()
@@ -45,12 +44,13 @@ class Survey(models.Model):
     usual_spending = models.TextField()
     subscriptions = models.TextField()
     wants = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+
+
 
 class Category(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     sum = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -63,6 +63,7 @@ class SubCategory(models.Model):
     category = models.ForeignKey(Category, related_name='subcategories', on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     sum = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -72,31 +73,3 @@ class SubCategory(models.Model):
         self.category.update_sum()
 
 
-from django.db.models.signals import post_migrate
-from django.dispatch import receiver
-from django.contrib.auth.models import User
-
-@receiver(post_migrate)
-def create_default_categories(sender, **kwargs):
-    if sender.name == 'procredit_app':  # Replace 'procredit_app' with the actual name of your app
-        default_user = User.objects.filter(is_superuser=True).first()  # Ensure you have a default user
-        
-        if not default_user:
-            raise Exception("No superuser found. Create a superuser to associate default categories.")
-
-        default_categories = {
-            'Bills': [
-                'Medical bills', 'Electricity', 'Gas and Fuel', 'Water', 'Garbage', 'Taxes', 'Insurance',
-            ],
-            'Needs': [
-                'Groceries', 'Transportation', 'Healthcare', 'Clothing', 'Education', 'Savings'
-            ],
-            'Wants': [
-                # Add subcategories as needed
-            ]
-        }
-
-        for category_name, subcategories in default_categories.items():
-            category, created = Category.objects.get_or_create(name=category_name, user=default_user)
-            for subcategory_name in subcategories:
-                SubCategory.objects.get_or_create(category=category, name=subcategory_name)
