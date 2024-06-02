@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from .forms import *
 from .models import *
@@ -39,7 +39,7 @@ def user_login(request):
             if user is not None:
                 login(request, user)  # This starts the session for the logged-in user
                 request.session['username'] = username  # Store the username in the session
-                return redirect('/survey/')
+                return redirect('/start/')
             else:
                 form.add_error(None, 'Invalid Username or Password!')
     else:
@@ -82,10 +82,8 @@ def dashboard(request):
                 category.user = request.user
                 category.save()
                 return redirect('dashboard')
-    else:
-        income_form = IncomeForm()
-        outcome_form = OutcomeForm(user=request.user)
-        category_form = OutcomeCategoryForm()
+
+
 
     context = {
         'incomes': incomes,
@@ -102,66 +100,88 @@ def dashboard(request):
     }
     return render(request, 'dashboard.html', context)
    
-def survey_view(request):
+
+def category_list(request):
+    categories = Category.objects.all()
+    return render(request, 'category_list.html', {'categories': categories})
+
+def add_category(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        Survey.objects.create(
-            spending_areas=', '.join(data.get('spending_areas', [])),
-            housing_status=data.get('housing_status', ''),
-            debts=', '.join(data.get('debts', [])),
-            usual_spending=', '.join(data.get('usual_spending', [])),
-            subscriptions=', '.join(data.get('subscriptions', [])),
-            wants=', '.join(data.get('wants', []))
-        )
-        return JsonResponse({'status': 'success'})
-
-    forms = [
-        ('Where do you spend the money?', SpendingAreasForm()),
-        ('Do you own or do you rent?', HousingStatusForm()),
-        ('Do you have any debts?', DebtsForm()),
-        ('Where do you usually spend money?', UsualSpendingForm()),
-        ('Do you have any subscriptions?', SubscriptionsForm()),
-        ('What are your wants?', WantsForm()),
-    ]
-
-    return render(request, 'survey.html', {'forms': forms})
-
-def submit_survey(request):
-    if request.method == 'POST':
-        spending_areas = request.POST.getlist('spending_areas')
-        housing_status = request.POST.get('housing_status')
-        debts = request.POST.getlist('debts')
-        usual_spending = request.POST.getlist('usual_spending')
-        subscriptions = request.POST.getlist('subscriptions')
-        wants = request.POST.getlist('wants')
-
-        if spending_areas and housing_status and debts and usual_spending and subscriptions and wants:
-            survey = Survey(
-                user=request.user,
-                spending_areas=','.join(spending_areas),
-                housing_status=housing_status,
-                debts=','.join(debts),
-                usual_spending=','.join(usual_spending),
-                subscriptions=','.join(subscriptions),
-                wants=','.join(wants),
-            )
-            survey.save()
-
-            return JsonResponse({'status': 'success'})
-        else:
-            return JsonResponse({'status': 'error', 'message': 'All fields are required.'})
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
     else:
-        forms = {
-            'spending_areas_form': SpendingAreasForm(),
-            'housing_status_form': HousingStatusForm(),
-            'debts_form': DebtsForm(),
-            'usual_spending_form': UsualSpendingForm(),
-            'subscriptions_form': SubscriptionsForm(),
-            'wants_form': WantsForm(),
-        }
-        return render(request, 'survey.html', {'forms': forms})
+        form = CategoryForm()
+    return render(request, 'dashboard_2', {'form': form})
 
-    
+def add_subcategory(request):
+    if request.method == 'POST':
+        form = SubCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
+    else:
+        form = SubCategoryForm()
+    return render(request, 'add_subcategory.html', {'form': form})
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')
+
+
+# views.py
+@login_required
+def start_survey(request):
+    if request.method == 'POST':
+        forms = [
+            SpendingAreasForm(request.POST),
+            HousingStatusForm(request.POST),
+            DebtsForm(request.POST),
+            UsualSpendingForm(request.POST),
+            SubscriptionsForm(request.POST),
+            WantsForm(request.POST)
+        ]
+        
+        if all(form.is_valid() for form in forms):
+            survey_response = Survey.objects.create(
+                user=request.user,
+                spending_areas=', '.join(forms[0].cleaned_data['spending_areas']),
+                housing_status=forms[1].cleaned_data['housing_status'],
+                debts=', '.join(forms[2].cleaned_data['debts']),
+                usual_spending=', '.join(forms[3].cleaned_data['usual_spending']),
+                subscriptions=', '.join(forms[4].cleaned_data['subscriptions']),
+                wants=', '.join(forms[5].cleaned_data['wants'])
+            )
+            link_default_categories_to_user(request.user)
+            create_user_specific_subcategories(request.user, survey_response)
+            return redirect('dashboard_2')
+    else:
+        forms = [
+            SpendingAreasForm(),
+            HousingStatusForm(),
+            DebtsForm(),
+            UsualSpendingForm(),
+            SubscriptionsForm(),
+            WantsForm()
+        ]
+        
+    context = {
+        'forms': forms
+    }
+    return render(request, 'survey.html', context)
+
+
+@login_required
+def dashboard_2(request):
+    user_categories = Category.objects.filter(user=request.user)
+    default_categories = get_default_categories()
+
+    context = {
+        'user_categories': user_categories,
+        'default_categories': default_categories
+    }
+    return render(request, 'dashboard_2.html', context)
 
 def link_default_categories_to_user(user):
     default_categories = {
@@ -179,37 +199,43 @@ def link_default_categories_to_user(user):
     for category_name, subcategories in default_categories.items():
         category, created = Category.objects.get_or_create(name=category_name, user=user)
         for subcategory_name in subcategories:
-            SubCategory.objects.get_or_create(category=category, name=subcategory_name)
+            SubCategory.objects.get_or_create(category=category, name=subcategory_name, user=user)
 
-def survey_results(request):
-    survey_responses = Survey.objects.filter(user=request.user)
-    categories = Category.objects.all()  # Fetch all categories that are predefined
-    return render(request, 'category_list.html', {'survey_responses': survey_responses, 'categories': categories})
+def get_default_categories():
+    default_categories = {
+        'Bills': [
+            'Medical bills', 'Electricity', 'Gas and Fuel', 'Water', 'Garbage', 'Taxes', 'Insurance',
+        ],
+        'Needs': [
+            'Groceries', 'Transportation', 'Healthcare', 'Clothing', 'Education', 'Savings'
+        ],
+        'Wants': [
+            # Add subcategories as needed
+        ]
+    }
 
-def category_list(request):
-    categories = Category.objects.all()
-    return render(request, 'category_list.html', {'categories': categories})
+    categories = []
+    for category_name, subcategories in default_categories.items():
+        category = Category(name=category_name)
+        category.subcategories_list = [SubCategory(name=subcategory_name) for subcategory_name in subcategories]
+        categories.append(category)
 
-def add_category(request):
-    if request.method == 'POST':
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('category_list')
-    else:
-        form = CategoryForm()
-    return render(request, 'add_category.html', {'form': form})
+    return categories
 
-def add_subcategory(request):
-    if request.method == 'POST':
-        form = SubCategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('category_list')
-    else:
-        form = SubCategoryForm()
-    return render(request, 'add_subcategory.html', {'form': form})
+def create_user_specific_subcategories(user, survey_response):
+    usual_spending_items = survey_response.usual_spending.split(', ')
+    needs_category, created = Category.objects.get_or_create(name='Needs', user=user)
 
-def user_logout(request):
-    logout(request)
-    return redirect('login')
+    for item in usual_spending_items:
+        SubCategory.objects.get_or_create(category=needs_category, name=item, user=user)
+
+
+def delete_category(request, pk):
+        category = get_object_or_404(Category, pk=pk)
+        category.delete()
+        return redirect('dashboard_2')
+
+def delete_subcategory(request, pk):
+        subcategory = get_object_or_404(SubCategory, pk=pk)
+        subcategory.delete()
+        return redirect('dashboard_2')
