@@ -36,14 +36,14 @@ def user_login(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('dashboard')
+                return redirect('/survey')
             else:
                 form.add_error(None, 'Invalid Username or Password!')
     else:
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
 
-@login_required(login_url = '/login/')
+@login_required(login_url='/login/')
 def dashboard(request):
     incomes = Income.objects.filter(user=request.user)
     outcomes = Outcome.objects.filter(user=request.user)
@@ -56,6 +56,10 @@ def dashboard(request):
     # Calculate savings and debts
     savings = total_income - total_outcome
     debts = total_outcome - total_income if total_outcome > total_income else 0
+
+    income_form = IncomeForm()
+    outcome_form = OutcomeForm(user=request.user)
+    category_form = OutcomeCategoryForm()
 
     if request.method == 'POST':
         if 'income_submit' in request.POST:
@@ -79,10 +83,6 @@ def dashboard(request):
                 category.user = request.user
                 category.save()
                 return redirect('dashboard')
-    else:
-        income_form = IncomeForm()
-        outcome_form = OutcomeForm(user=request.user)
-        category_form = OutcomeCategoryForm()
 
     context = {
         'incomes': incomes,
@@ -95,7 +95,6 @@ def dashboard(request):
         'outcome_form': outcome_form,
         'category_form': category_form,
         'categories': categories,
-
     }
     return render(request, 'dashboard.html', context)
    
@@ -122,11 +121,13 @@ def survey_view(request):
     ]
 
     return render(request, 'survey.html', {'forms': forms})
-
-def survey_results(request):
-    responses = Survey.objects.all()
-    return render(request, 'survey_results.html', {'responses': responses})
   
 def user_logout(request):
     logout(request)
     return redirect('login')
+
+def savings(request):
+    return render(request, 'savings.html')
+
+def investing(request):
+    return render(request, 'investing.html')
