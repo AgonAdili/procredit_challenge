@@ -6,68 +6,104 @@
     <style>
         .step { display: none; }
         .step.active { display: block; }
-        .popup { display: block; }
+        .survey-option {
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .survey-option input[type="checkbox"] {
+            display: none;
+        }
+        .survey-option input[type="checkbox"] + label {
+            display: block;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .survey-option input[type="checkbox"]:checked + label {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let currentStep = 0;
-            const steps = document.querySelectorAll('.step');
-            const popup = document.getElementById('popup');
-
-            document.getElementById('start-survey').addEventListener('click', function () {
-                popup.style.display = 'none';
-                document.getElementById('survey-form').style.display = 'block';
-                showStep(0);
-            });
-
-            document.getElementById('next-btn').addEventListener('click', function () {
+   <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.step');
+    
+        document.getElementById('start-survey').addEventListener('click', function () {
+            $('#surveyModal').modal('show');
+            showStep(0);
+        });
+    
+        document.getElementById('next-btn').addEventListener('click', function () {
+            if (validateStep(currentStep)) {
                 if (currentStep < steps.length - 1) {
                     showStep(currentStep + 1);
                 } else {
                     submitSurvey();
                 }
-            });
-
-            document.getElementById('prev-btn').addEventListener('click', function () {
-                if (currentStep > 0) {
-                    showStep(currentStep - 1);
+            } else {
+                alert('Please select at least one option before proceeding.');
+            }
+        });
+    
+        document.getElementById('prev-btn').addEventListener('click', function () {
+            if (currentStep > 0) {
+                showStep(currentStep - 1);
+            }
+        });
+    
+        function showStep(step) {
+            steps[currentStep].classList.remove('active');
+            currentStep = step;
+            steps[currentStep].classList.add('active');
+            updateButtons();
+        }
+    
+        function validateStep(step) {
+            const inputs = steps[step].querySelectorAll('input[type="checkbox"], input[type="radio"]');
+            for (let input of inputs) {
+                if (input.checked) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    
+        function submitSurvey() {
+            const form = document.getElementById('survey-form');
+            const formData = new FormData(form);
+            
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: formData
+            }).then(response => response.json()).then(data => {
+                if (data.status === 'success') {
+                    alert('Survey submitted successfully!');
+                    window.location.href = '/';
+                } else {
+                    alert('There was an error submitting the survey.');
+                    console.log(data.errors);
                 }
             });
-
-            function showStep(step) {
-                steps[currentStep].classList.remove('active');
-                currentStep = step;
-                steps[currentStep].classList.add('active');
+        }
+    
+        function updateButtons() {
+            const nextBtn = document.getElementById('next-btn');
+            if (currentStep === steps.length - 1) {
+                nextBtn.textContent = 'Submit';
+            } else {
+                nextBtn.textContent = 'Next';
             }
-
-            function submitSurvey() {
-                const data = {};
-                document.querySelectorAll('.step input:checked').forEach(input => {
-                    if (!data[input.name]) data[input.name] = [];
-                    data[input.name].push(input.value);
-                });
-                document.querySelectorAll('.step input[type="radio"]:checked').forEach(input => {
-                    data[input.name] = input.value;
-                });
-
-                fetch('/survey/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify(data)
-                }).then(response => response.json()).then(data => {
-                    if (data.status === 'success') {
-                        alert('Survey submitted successfully!');
-                        window.location.href = '/';
-                    }
-                });
-            }
-
-            // Show the first step initially
-            showStep(0);
-        });
+        }
+    
+        // Show the first step initially
+        showStep(0);
+    });
     </script>
 </head>
 <body>
@@ -93,5 +129,11 @@
             </div>
         </form>
     </div>
+
+
+   
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

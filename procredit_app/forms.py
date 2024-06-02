@@ -3,8 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from phonenumber_field.modelfields import PhoneNumberField
 from datetime import date
-from .models import Income, Outcome, OutcomeCategory
-
+from .models import *
 
 class SignUpForm(UserCreationForm):
     name = forms.CharField(required = True, max_length = 128)
@@ -50,7 +49,7 @@ class DebtsForm(forms.Form):
 class UsualSpendingForm(forms.Form):
     usual_spending = forms.MultipleChoiceField(
         choices=[
-            ('groceries', 'Groceries'), ('personal_care', 'Personal care'), ('medical_bills', 'Medical bills'), ('clothes', 'Clothes'), ('none_apply', 'None of these apply to me')
+            ('groceries', 'Groceries'), ('personal_care', 'Personal care'), ('clothes', 'Clothes'), ('none_apply', 'None of these apply to me')
         ],
         widget=forms.CheckboxSelectMultiple
     )
@@ -96,3 +95,14 @@ class OutcomeCategoryForm(forms.ModelForm):
     class Meta:
         model = OutcomeCategory
         fields = ['name']
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'sum']
+
+class SubCategoryForm(forms.ModelForm):
+    class Meta:
+        model = SubCategory
+        fields = ['category', 'name', 'sum']
+
