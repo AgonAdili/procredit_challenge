@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey Results</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Your Survey Responses</h2>
+        <ul class="list-group">
+            {% for survey in survey_responses %}
+                <li class="list-group-item">
+                    <strong>Spending Areas:</strong> {{ survey.spending_areas }}<br>
+                    <strong>Housing Status:</strong> {{ survey.housing_status }}<br>
+                    <strong>Debts:</strong> {{ survey.debts }}<br>
+                    <strong>Usual Spending:</strong> {{ survey.usual_spending }}<br>
+                    <strong>Subscriptions:</strong> {{ survey.subscriptions }}<br>
+                    <strong>Wants:</strong> {{ survey.wants }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <h2 class="mt-4">Generated Categories</h2>
+        <ul class="list-group">
+            {% for category in categories %}
+                <li class="list-group-item">
+                    {{ category.name }} - Total: {{ category.sum }}
+                    <ul>
+                        {% for subcategory in category.subcategories.all %}
+                            <li>{{ subcategory.name }} - Sum: {{ subcategory.sum }}</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
