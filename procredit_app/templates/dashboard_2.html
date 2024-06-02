@@ -1,0 +1,309 @@
+<!-- dashboard_2.html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Dashboard</h2>
+        <h3>Your Categories</h3>
+        {% for category in user_categories %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>{{ category.name }}</h5>
+                <ul>
+                    {% for subcategory in category.subcategories.all %}
+                    <li>{{ subcategory.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <h3>Default Categories</h3>
+        {% for category in default_categories %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5>{{ category.name }}</h5>
+                <ul>
+                    {% for subcategory in category.subcategories_list %}
+                    <li>{{ subcategory.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background-color: #ffffff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 12px;
+            height: 100vh;
+        }
+
+        .content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .card {
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .category-group {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .category-item {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .category-item:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn-group .btn {
+            font-size: 0.85rem;
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28255, 255, 255, 0.5%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+        }
+
+        .navbar {
+            padding: 0;
+        }
+
+        .navbar-brand {
+            margin-left: 20px;
+        }
+
+        .sidebar-sticky {
+            top: 0;
+        }
+
+        .nav-item {
+            text-align: left;
+        }
+
+        .main-content {
+            margin-right: 200px;
+        }
+
+        .popup-space {
+            width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="m-3">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-sticky sidebar text-center shadow">
+                <div class="sidebar-sticky">
+                    <h4 class="sidebar-heading">MintSave</h4>
+                    <ul class="nav flex-column mb-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#">
+                                Overview
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Savings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Invest
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Sidebar Footer -->
+                <div class="sidebar-footer">
+                    <ul class="nav flex-column mb-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main role="main" class="col-md-8 ms-sm-auto col-lg-8 px-md-4 main-content">
+                <div class="header shadow rounded" style="background-image: linear-gradient(to bottom right, #E10311 , #EE4E58 );">
+                    <p class="display-5 fw-bold text-white px-3 pt-2">Hello, James</p>
+                    <h4 class="fw-italic text-white pb-4 px-3">Let's help you save</h4>
+                </div>
+                <!-- Group and Category Section -->
+                <section class="mt-5">
+                        
+                            <form method="post">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <button type="submit">Save</button>
+                            </form>
+                        
+                        {% for category in user_categories %}
+                        <div id="category-group-container">
+                            <!-- Example group card -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <div class="category-group" id="group-{{ category.id }}">
+                                        <div>
+                                            <input type="text" class="form-control-plaintext" value="{{ category.name }}" readonly>
+                                        </div>
+                                        <div class="btn-group">
+                                            <a href="" class="btn btn-outline-primary btn-sm add-btn">Add subcategory</a>
+                                            <a href="" class="btn btn-outline-secondary btn-sm edit-btn">Edit</a>
+                                            <a href="/delete_category/{{category.id}}/" class="btn btn-outline-danger btn-sm delete-btn" data-category-id="{{category.id}}">Delete Group</a>
+                                        </div>
+                                    </div>
+
+                                    {% for subcategory in category.subcategories.all %}
+                                    <!-- Category items will be added here -->
+                                    <div class="category-item" id="category-{{ subcategory.id }}">
+                                        <div>
+                                            <input type="text" class="form-control-plaintext" value="{{ subcategory.name }}" readonly>
+                                        </div>
+                                        <div class="btn-group">
+                                            <a href="" class="btn btn-outline-secondary btn-sm edit-btn">Edit</a>
+                                            <a href="/delete_subcategory/{{subcategory.id}}" class="btn btn-outline-danger btn-sm delete-subcategory-btn" data-subcategory-id="{{ subcategory.id }}">Delete</a>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- End example group card -->
+                        </div>
+                        {% endfor %}
+                </section>
+            </main>
+
+            <!-- Space for popup -->
+            <div class="col-md-2 popup-space">
+                <!-- Popup content will go here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="categoryModalLabel">Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                <label for="targetType" class="form-label">Target</label>
+                                <div class="btn-group w-100 mb-3" role="group" aria-label="Target Type">
+                                    <input type="radio" class="btn-check" name="targetType" id="weekly" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="weekly">Weekly</label>
+
+                                    <input type="radio" class="btn-check" name="targetType" id="monthly" autocomplete="off" checked>
+                                    <label class="btn btn-outline-primary" for="monthly">Monthly</label>
+
+                                    <input type="radio" class="btn-check" name="targetType" id="yearly" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="yearly">Yearly</label>
+
+                                    <input type="radio" class="btn-check" name="targetType" id="custom" autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="custom">Custom</label>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="needAmount" class="form-label">I need</label>
+                                    <input type="text" class="form-control" id="needAmount" value="$0.00">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="targetDate" class="form-label">By</label>
+                                    <select class="form-select" id="targetDate">
+                                        <option>Last Day of Month</option>
+                                        <option>First Day of Month</option>
+                                        <option>Specific Date</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="nextMonth" class="form-label">Next month I want to</label>
+                                    <select class="form-select" id="nextMonth">
+                                        <option>Set aside another $0.00</option>
+                                        <option>Save a different amount</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" id="deleteTarget">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Save Target</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,14 +1,16 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate
 from .forms import *
 from .models import *
 from django.http import JsonResponse
 import json
-
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm, IncomeForm, OutcomeForm, LoginForm, OutcomeCategoryForm
-from .models import Client, NonClient, Income, Outcome, OutcomeCategory
+from django.contrib.auth.forms import AuthenticationForm
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+
 
 def signup(request):
     if request.method == 'POST':
@@ -28,7 +30,7 @@ def signup(request):
 
 def user_login(request):
     if request.method == 'POST':
-        form = LoginForm(request.POST)
+        form = AuthenticationForm(request, data=request.POST) 
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
@@ -36,14 +38,14 @@ def user_login(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('dashboard')
+                return redirect('/survey')
             else:
                 form.add_error(None, 'Invalid Username or Password!')
     else:
-        form = LoginForm()
+        form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
-@login_required(login_url = '/login/')
+@login_required(login_url='/login/')
 def dashboard(request):
     incomes = Income.objects.filter(user=request.user)
     outcomes = Outcome.objects.filter(user=request.user)
@@ -56,6 +58,10 @@ def dashboard(request):
     # Calculate savings and debts
     savings = total_income - total_outcome
     debts = total_outcome - total_income if total_outcome > total_income else 0
+
+    income_form = IncomeForm()
+    outcome_form = OutcomeForm(user=request.user)
+    category_form = OutcomeCategoryForm()
 
     if request.method == 'POST':
         if 'income_submit' in request.POST:
@@ -95,38 +101,34 @@ def dashboard(request):
         'outcome_form': outcome_form,
         'category_form': category_form,
         'categories': categories,
-
     }
     return render(request, 'dashboard.html', context)
    
-def survey_view(request):
+
+def category_list(request):
+    categories = Category.objects.all()
+    return render(request, 'category_list.html', {'categories': categories})
+
+def add_category(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        Survey.objects.create(
-            spending_areas=', '.join(data.get('spending_areas', [])),
-            housing_status=data.get('housing_status', ''),
-            debts=', '.join(data.get('debts', [])),
-            usual_spending=', '.join(data.get('usual_spending', [])),
-            subscriptions=', '.join(data.get('subscriptions', [])),
-            wants=', '.join(data.get('wants', []))
-        )
-        return JsonResponse({'status': 'success'})
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
+    else:
+        form = CategoryForm()
+    return render(request, 'dashboard_2', {'form': form})
 
-    forms = [
-        ('Where do you spend the money?', SpendingAreasForm()),
-        ('Do you own or do you rent?', HousingStatusForm()),
-        ('Do you have any debts?', DebtsForm()),
-        ('Where do you usually spend money?', UsualSpendingForm()),
-        ('Do you have any subscriptions?', SubscriptionsForm()),
-        ('What are your wants?', WantsForm()),
-    ]
+def add_subcategory(request):
+    if request.method == 'POST':
+        form = SubCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('category_list')
+    else:
+        form = SubCategoryForm()
+    return render(request, 'add_subcategory.html', {'form': form})
 
-    return render(request, 'survey.html', {'forms': forms})
-
-def survey_results(request):
-    responses = Survey.objects.all()
-    return render(request, 'survey_results.html', {'responses': responses})
-  
 def user_logout(request):
     logout(request)
     return redirect('login')

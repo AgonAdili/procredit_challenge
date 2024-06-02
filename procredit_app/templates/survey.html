@@ -4,94 +4,85 @@
     <title>Survey</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        .step { display: none; }
-        .step.active { display: block; }
-        .popup { display: block; }
+        body {
+            background-color: #f8f9fa;
+        }
+        .survey-container {
+            max-width: 800px;
+            margin: auto;
+            margin-top: 50px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+        .card-body h5 {
+            margin-bottom: 20px;
+        }
+        .card-body {
+            background-color: #ffffff;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let currentStep = 0;
-            const steps = document.querySelectorAll('.step');
-            const popup = document.getElementById('popup');
-
-            document.getElementById('start-survey').addEventListener('click', function () {
-                popup.style.display = 'none';
-                document.getElementById('survey-form').style.display = 'block';
-                showStep(0);
-            });
-
-            document.getElementById('next-btn').addEventListener('click', function () {
-                if (currentStep < steps.length - 1) {
-                    showStep(currentStep + 1);
-                } else {
-                    submitSurvey();
-                }
-            });
-
-            document.getElementById('prev-btn').addEventListener('click', function () {
-                if (currentStep > 0) {
-                    showStep(currentStep - 1);
-                }
-            });
-
-            function showStep(step) {
-                steps[currentStep].classList.remove('active');
-                currentStep = step;
-                steps[currentStep].classList.add('active');
-            }
-
-            function submitSurvey() {
-                const data = {};
-                document.querySelectorAll('.step input:checked').forEach(input => {
-                    if (!data[input.name]) data[input.name] = [];
-                    data[input.name].push(input.value);
-                });
-                document.querySelectorAll('.step input[type="radio"]:checked').forEach(input => {
-                    data[input.name] = input.value;
-                });
-
-                fetch('/survey/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify(data)
-                }).then(response => response.json()).then(data => {
-                    if (data.status === 'success') {
-                        alert('Survey submitted successfully!');
-                        window.location.href = '/survey/results/';
-                    }
-                });
-            }
-
-            // Show the first step initially
-            showStep(0);
-        });
-    </script>
 </head>
 <body>
-    <div class="container mt-5">
-        <div id="popup" class="popup">
-            <h2>Tired of not knowing how to spend money?</h2>
-            <p>We can help! Take our survey to get started.</p>
-            <button id="start-survey" class="btn btn-primary">Start Survey</button>
-        </div>
-
-        <form id="survey-form" style="display: none;">
-            {% csrf_token %}
-            {% for question, form in forms %}
-            <div class="step {% if forloop.first %}active{% endif %}">
-                <h3>{{ question }}</h3>
-                {{ form.as_p }}
+    <div class="container survey-container">
+        <div class="shadow card">
+            <div class="text-center card-header">
+                <h3>Financial Survey</h3>
             </div>
-            {% endfor %}
-
-            <div class="d-flex justify-content-between mt-3">
-                <button type="button" id="prev-btn" class="btn btn-secondary">Previous</button>
-                <button type="button" id="next-btn" class="btn btn-primary">Next</button>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3 card">
+                        <div class="card-body">
+                            <h5>Where do you spend the money?</h5>
+                            {{ forms.0.as_p }}
+                        </div>
+                    </div>
+                    <div class="mb-3 card">
+                        <div class="card-body">
+                            <h5>Do you own or do you rent?</h5>
+                            {{ forms.1.as_p }}
+                        </div>
+                    </div>
+                    <div class="mb-3 card">
+                        <div class="card-body">
+                            <h5>Do you have any debts?</h5>
+                            {{ forms.2.as_p }}
+                        </div>
+                    </div>
+                    <div class="mb-3 card">
+                        <div class="card-body">
+                            <h5>Where do you usually spend money?</h5>
+                            {{ forms.3.as_p }}
+                        </div>
+                    </div>
+                    <div class="mb-3 card">
+                        <div class="card-body">
+                            <h5>Do you have any subscriptions?</h5>
+                            {{ forms.4.as_p }}
+                        </div>
+                    </div>
+                    <div class="mb-3 card">
+                        <div class="card-body">
+                            <h5>What are your wants?</h5>
+                            {{ forms.5.as_p }}
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+                    </div>
+                </form>
             </div>
         </form>
     </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
@@ -36,10 +37,31 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Client',
+            name='OutcomeCategory',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('name', models.CharField(max_length=50)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Outcome',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('category', models.CharField(choices=[('rent', 'Rent'), ('car', 'Car'), ('insurance', 'Insurance')], max_length=50)),
+                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
+                ('date', models.DateField()),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Income',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('job_title', models.CharField(max_length=255, null=True)),
+                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
+                ('date', models.DateField(default=datetime.date(2024, 6, 2))),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
@@ -50,10 +72,22 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='OutcomeCategory',
+            name='Outcome',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
+                ('category', models.CharField(choices=[('bills', 'Bills'), ('needs', 'Needs'), ('wants', 'Wants')], max_length=50)),
+                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
+                ('date', models.DateField()),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Income',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('job_title', models.CharField(max_length=255)),
+                ('amount', models.DecimalField(decimal_places=2, max_digits=10)),
+                ('date', models.DateField()),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
